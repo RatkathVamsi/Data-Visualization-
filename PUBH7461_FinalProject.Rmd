@@ -1,33 +1,53 @@
 ---
 title: "PUBH 7461 Final Project"
-author: "Vamsi"
-date: "2024-12-04"
-output: html_document
+author: "Nithya Murikinati, Sri Krishna Vamsi Koneru"
+date: "`r Sys.Date()`"
+output:
+  slidy_presentation: 
+      font_adjustment: -1
 ---
 
-```{r}
-data<-read.csv("C:/UMN/fall2024/ExpVis data in R/project/US-National-Parks_Use_1979-2023_By-Month.csv")
-```
-###Dataset
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
 
-```{r warnings=FALSE}
 library(dplyr)
 library(ggplot2)
 library(gt)
 library(scales)
 library(tidyr)
+
+data<-read.csv("US-National-Parks_Use_1979-2023_By-Month.csv")
 ```
-###Question 1:What is the  Distribution of the types of visits to National Parks across the years?
+
+# Dataset
+
+ **U.S. National Park Visit Data (1979-2023)**
+
+This dataset contains the number of visits, per month, to each of the current 63 National Parks administered by the United States National Park Service (NPS) from 1979 to 2023. The NPS also collects visitation and use data about other park units, such as national battlefields, national rivers, and national monuments. However, information about other park units is not included in this particular dataset.
+
+The NPS’s visitation data is a valuable resource that gives us a glimpse into the country’s relationship with the National Parks—some of the world’s most precious natural resources—over the last 50 years. This data is integral to the maintenance and growth of the parks, to environmental conservation, to gateway communities, and to our historical and sociological understanding.
+
+The dataset has 12 columns:
+
+```{r}
+str(data)
+```
+
+Source: [**U.S. National Park Visit Data**](https://www.responsible-datasets-in-context.com/posts/np-data/)
+
+# Visualization 1
+
+**Question 1: What is the distribution of the types of visits to National Parks over the years?**
 
 ```{r}
 data %>% 
   group_by(Year) %>%
   summarise(
-    TotalRecreationVisits = sum(RecreationVisits),
-    TotalNonRecreationVisits = sum(NonRecreationVisits),
-    TotalTentCampers = sum(TentCampers),
-    TotalRVCampers = sum(RVCampers),
-    TotalBackcountry = sum(Backcountry)
+    RecreationVisits = sum(RecreationVisits),
+    NonRecreationVisits = sum(NonRecreationVisits),
+    TentCampers = sum(TentCampers),
+    RVCampers = sum(RVCampers),
+    Backcountry = sum(Backcountry)
   ) %>%
   pivot_longer(cols = -Year, 
                names_to = "Category", 
@@ -36,12 +56,24 @@ data %>%
   geom_boxplot()+
   geom_jitter(alpha=0.3,aes(color=Category))+
   scale_x_continuous(labels=label_comma())+
-  labs(x="Number of Visits ",y="Type of Visit",title="Distribution of visits to US National Parks across the years")+
+  labs(x="Number of Visits per Year",y="Type of Visit",title="Distribution of Yearly Visits to National Parks across various Visit Types")+
   theme_classic()+
   theme(legend.position = "none")
 
 ```
-### Question 2: How have recreation and non-recreation visits to US National Parks evolved over the years?
+  
+  **Interpretation**
+  
+  - Among the various types of visits to National Parks **Recreational visits** was the most common type, followed by **Non-recreational visits** in the second place. 
+  
+  - The visits of the types: Tent Campers, RV Campers and Backcountry were very few compared to the top two. 
+  
+  - Therefore, let us focus on the recreational and non-recreational visits and explore them further.
+  
+  
+# Visualization 2
+
+**Question 2: How have recreation and non-recreation visits to US National Parks evolved over the years?**
 
 ```{r}
 data %>%
@@ -60,10 +92,21 @@ data %>%
   scale_y_continuous(labels = label_comma()) +
   theme_bw()
 ```
-###Question 3:What is the monthwide trend in recreation visits across regions during 2019,2020,2021?
 
+  **Interpretation**
+  
+  - Both recreational and non-recreational visits have shown an increase in the general trend from 1979 to 2023.
+  
+  - However, there is a drastic decrease in the number of visits for the year **2020**, specifically observed more for recreational visits. One major reason for this downfall could be due to the unexpected COVID-19 pandemic during the start of 2020.
+  
+  -  Hence, let us look at the impact of COVID over US national parks across regions.
 
-```{r}
+  
+# Visualization 3
+
+**Question 3: What is the monthwise trend in recreational visits across regions during 2019, 2020 and 2021?**
+
+```{r message=FALSE}
 data %>% 
   filter(Year %in% c("2019","2020","2021")) %>% 
   group_by(Region,Month,Year) %>% 
@@ -83,10 +126,21 @@ data %>%
  
 ```
 
+  **Interpretation**
+  
+  - It is evident that the number of recreational visits were significantly lower during the pandemic (2020) compared to pre/post-pandemic (2019,2021) across all 6 regions of United States.
+  
+  - Many regions show a significant drop in the number of visits during **April 2020**, which was the time when most Nations imposed travel restrictions to keep the virus from spreading.
+  
+  - Among all regions, **Intermountain** has the highest number of total recreational visits. Let's take a closer look at this region.
 
-###Question 4 : How do the number of visits look like across different parks in the Intermountain region during 2019-2021?
 
-```{r}
+  
+# Visualization 4
+
+**Question 4 : How do the number of Recreational and Non Recreational visits look like across different parks in the Intermountain region during 2019-2021?**
+
+```{r message=FALSE}
 data %>% 
   filter(Year %in% c("2019","2020","2021")) %>% 
   filter(Region=="Intermountain ") %>% 
@@ -104,6 +158,44 @@ data %>%
   tab_header(title="Number of Visits to National Parks in Intermountain Region during 2019-2021") %>% 
   tab_source_note(source_note = "Data source: U.S. NATIONAL PARK VISIT DATA(1979-2023)")
 ```
+
+  **Interpretation**
+  
+  - 19 out of 63 US National Parks reside in the Intermountain region. Hence, the number of total visits are higher in this region compared to others (in previous visualization).
+ 
+  - The number of visits under the recreational visits section, show a drop in the year 2020 for all the 19 national parks. However, there is no significant drop in the non-recreational visits.
+
+  - Some non-recreational visits are recorded as zero, this could be because of lack of data reported by NPS for non-recreational visits.
+
+# Future Work
+
+  - Bar graphs could be created faceted for each national park in a specific region. This would help in identifying region specific trendsover the visits.
+
+  - The analysis that we did for intermountain region could be reproduced on other regions and an interesting topic would be to study and compare the percentage of visits reduced due to COVID over all regions.
+
+  - Another intriguing area of research could be observing the trends of RV Campers, Tent Campers and Backcountry visits across the national parks in US. This can be further extended to region specific visualizations.
+  
+  - Overall, our analysis can act as a foundation for the NPS officials to understand the impact of COVID over US national parks and make data driven decisions accordingly.
+  
+  
+# References
+
+ - https://www.responsible-datasets-in-context.com/posts/np-data/
+ 
+ - https://tidyr.tidyverse.org/
+ 
+ - https://cran.r-project.org/web/packages/ggplot2/index.html
+ 
+ - https://gt.rstudio.com/
+ 
+ - [PUBH 7461 Coursework](https://canvas.umn.edu/courses/462619)
+
+
+
+
+
+
+
 
 
 
